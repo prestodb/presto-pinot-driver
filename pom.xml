@@ -46,7 +46,8 @@
         <air.maven.version>3.3.9</air.maven.version>
 
         <shadeBase>org.apache.pinot.\$internal</shadeBase>
-        <dep.pinot.version>0.1.0</dep.pinot.version>
+        <dep.pinot.version>0.5.0</dep.pinot.version>
+        <dep.helix.version>0.9.7</dep.helix.version>
         <log4j.version>2.11.2</log4j.version>
     </properties>
 
@@ -59,25 +60,87 @@
         </dependency>
 
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.1.42.Final</version>
-        </dependency>
-
-        <dependency>
-            <!-- pinot-common depends on this but does not include it -->
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.5</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
             <!-- To avoid the warning that the antlr runtime version differs -->
             <version>4.6</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.pinot</groupId>
+            <artifactId>pinot-spi</artifactId>
+            <version>${dep.pinot.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr4-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>it.unimi.dsi</groupId>
+                    <artifactId>fastutil</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka-clients</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka_2.10</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.validation</groupId>
+                    <artifactId>validation-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>joda-time</groupId>
+                    <artifactId>joda-time</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-core-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.apache.pinot</groupId>
             <artifactId>pinot-common</artifactId>
@@ -155,53 +218,25 @@
                     <groupId>jakarta.annotation</groupId>
                     <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.pinot</groupId>
-            <artifactId>pinot-transport</artifactId>
-            <version>${dep.pinot.version}</version>
-            <exclusions>
                 <exclusion>
-                    <groupId>org.checkerframework</groupId>
-                    <artifactId>checker-compat-qual</artifactId>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
+                    <groupId>joda-time</groupId>
+                    <artifactId>joda-time</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.antlr</groupId>
-                    <artifactId>antlr4-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.kafka</groupId>
-                    <artifactId>kafka-clients</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.kafka</groupId>
-                    <artifactId>kafka_2.10</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.validation</groupId>
-                    <artifactId>validation-api</artifactId>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -218,6 +253,10 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -255,33 +294,139 @@
                     <groupId>javax.validation</groupId>
                     <artifactId>validation-api</artifactId>
                 </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.thrift</groupId>
-            <artifactId>libthrift</artifactId>
-            <version>0.12.0</version>
-            <exclusions>
                 <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-lang3</artifactId>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>joda-time</groupId>
+                    <artifactId>joda-time</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpcore</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-analyzers-common</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
+            <groupId>org.apache.helix</groupId>
+            <artifactId>helix-core</artifactId>
+            <version>${dep.helix.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr4-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>it.unimi.dsi</groupId>
+                    <artifactId>fastutil</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka-clients</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.kafka</groupId>
+                    <artifactId>kafka_2.10</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.validation</groupId>
+                    <artifactId>validation-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>joda-time</groupId>
+                    <artifactId>joda-time</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-core-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>com.yammer.metrics</groupId>
             <artifactId>metrics-core</artifactId>
             <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+            <version>1.30.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.12.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -324,19 +469,21 @@
                             <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                             <artifactSet>
                                 <includes>
-                                    <include>org.apache.pinot:*</include>
                                     <include>com.google.guava:*</include>
-                                    <include>org.apache.commons:*</include>
+                                    <include>com.google.protobuf:*</include>
+                                    <include>com.yammer.metrics:*</include>
                                     <include>commons-*:*</include>
+                                    <include>io.grpc:*</include>
+                                    <include>io.netty:*</include>
+                                    <include>org.apache.commons:*</include>
+                                    <include>org.apache.pinot:*</include>
                                     <include>org.apache.http:*</include>
                                     <include>org.antlr:*</include>
-                                    <include>io.netty:*</include>
                                     <include>org.apache.thrift:*</include>
-                                    <include>com.yammer.metrics:*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
-                                <!-- everything except the stuff in pinot-common is shaded -->
+                                <!-- everything except the stuff in pinot-spi, pinot-common is shaded -->
                                 <relocation>
                                     <pattern>org.apache.pinot.pql</pattern>
                                     <shadedPattern>${shadeBase}.org.apache.pinot.pql</shadedPattern>
@@ -356,10 +503,6 @@
                                 <relocation>
                                     <pattern>org.apache.http</pattern>
                                     <shadedPattern>${shadeBase}.org.apache.http</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.apache.pinot.transport</pattern>
-                                    <shadedPattern>${shadeBase}.org.apache.pinot.transport</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache.pinot.core</pattern>
