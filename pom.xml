@@ -10,7 +10,7 @@
 
     <groupId>com.facebook.presto.pinot</groupId>
     <artifactId>pinot-driver</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.2</version>
 
     <name>pinot-driver</name>
     <description>Shaded driver for the presto-pinot connector that exposes only the pinot-common dependancies and some helpers</description>
@@ -32,7 +32,7 @@
         <connection>scm:git:git://github.com/prestodb/presto-pinot-driver.git</connection>
         <developerConnection>scm:git:git://github.com/prestodb/presto-pinot-driver.git</developerConnection>
         <url>https://github.com/prestodb/presto-pinot-driver</url>
-        <tag>HEAD</tag>
+        <tag>0.1.2</tag>
     </scm>
 
     <properties>
