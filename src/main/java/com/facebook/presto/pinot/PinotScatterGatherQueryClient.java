@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.pinot;
 
-import com.yammer.metrics.core.MetricsRegistry;
 import org.apache.helix.model.InstanceConfig;
 import org.apache.pinot.common.metrics.BrokerMetrics;
 import org.apache.pinot.common.request.BrokerRequest;
@@ -22,6 +21,7 @@ import org.apache.pinot.core.transport.AsyncQueryResponse;
 import org.apache.pinot.core.transport.QueryRouter;
 import org.apache.pinot.core.transport.ServerResponse;
 import org.apache.pinot.core.transport.ServerRoutingInstance;
+import org.apache.pinot.plugin.metrics.yammer.YammerMetricsRegistry;
 import org.apache.pinot.pql.parsers.Pql2CompilationException;
 import org.apache.pinot.pql.parsers.Pql2Compiler;
 import org.apache.pinot.spi.config.table.TableType;
@@ -45,7 +45,6 @@ public class PinotScatterGatherQueryClient
 {
     private static final Pql2Compiler REQUEST_COMPILER = new Pql2Compiler();
     private static final String PRESTO_HOST_PREFIX = "presto-pinot-";
-    private static final boolean DEFAULT_EMIT_TABLE_LEVEL_METRICS = true;
 
     private final String prestoHostId;
     private final BrokerMetrics brokerMetrics;
@@ -150,9 +149,7 @@ public class PinotScatterGatherQueryClient
     public PinotScatterGatherQueryClient(Config pinotConfig)
     {
         prestoHostId = getDefaultPrestoId();
-
-        MetricsRegistry registry = new MetricsRegistry();
-        brokerMetrics = new BrokerMetrics(registry, DEFAULT_EMIT_TABLE_LEVEL_METRICS);
+        brokerMetrics = new BrokerMetrics(new YammerMetricsRegistry());
         brokerMetrics.initializeGlobalMeters();
 
         // Setup QueryRouters
