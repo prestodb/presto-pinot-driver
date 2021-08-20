@@ -13,19 +13,22 @@
  */
 package com.facebook.presto.pinot;
 
-import com.yammer.metrics.core.MetricsRegistry;
 import org.apache.helix.model.InstanceConfig;
 import org.apache.pinot.common.metrics.BrokerMetrics;
+import org.apache.pinot.common.metrics.PinotMetricUtils;
 import org.apache.pinot.common.request.BrokerRequest;
 import org.apache.pinot.common.utils.DataTable;
 import org.apache.pinot.core.transport.AsyncQueryResponse;
 import org.apache.pinot.core.transport.QueryRouter;
 import org.apache.pinot.core.transport.ServerResponse;
 import org.apache.pinot.core.transport.ServerRoutingInstance;
+import org.apache.pinot.core.transport.TlsConfig;
+import org.apache.pinot.plugin.metrics.yammer.YammerMetricsRegistry;
 import org.apache.pinot.pql.parsers.Pql2CompilationException;
 import org.apache.pinot.pql.parsers.Pql2Compiler;
 import org.apache.pinot.spi.config.table.TableType;
 import org.apache.pinot.spi.utils.builder.TableNameBuilder;
+import org.reflections.Reflections;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -45,13 +48,19 @@ public class PinotScatterGatherQueryClient
 {
     private static final Pql2Compiler REQUEST_COMPILER = new Pql2Compiler();
     private static final String PRESTO_HOST_PREFIX = "presto-pinot-";
-    private static final boolean DEFAULT_EMIT_TABLE_LEVEL_METRICS = true;
 
     private final String prestoHostId;
     private final BrokerMetrics brokerMetrics;
     private final Queue<QueryRouter> queryRouters = new ConcurrentLinkedQueue<>();
     private final Config config;
     private final Map<String, AtomicInteger> concurrentQueriesCountMap = new ConcurrentHashMap<>();
+
+    static {
+        // Construct YammerMetricsRegistry for code reference to pass Checkstyle
+        new YammerMetricsRegistry();
+        // Construct Reflections for code reference to pass Checkstyle
+        new Reflections();
+    }
 
     public enum ErrorCode
     {
@@ -101,12 +110,36 @@ public class PinotScatterGatherQueryClient
 
         private final int maxBacklogPerServer;
 
+        private final boolean clientAuthEnabled;
+
+        private final String trustStorePath;
+
+        private final String trustStorePassword;
+
+        private final String keyStorePath;
+
+        private final String keyStorePassword;
+
         @Deprecated
         private final long idleTimeoutMillis;
         @Deprecated
         private final int minConnectionsPerServer;
         @Deprecated
         private final int maxConnectionsPerServer;
+
+        public Config(Map<String, Object> pinotConfigs)
+        {
+            this.idleTimeoutMillis = Long.parseLong(pinotConfigs.get("idleTimeoutMillis").toString());
+            this.threadPoolSize = Integer.parseInt(pinotConfigs.get("threadPoolSize").toString());
+            this.minConnectionsPerServer = Integer.parseInt(pinotConfigs.get("minConnectionsPerServer").toString());
+            this.maxBacklogPerServer = Integer.parseInt(pinotConfigs.get("maxBacklogPerServer").toString());
+            this.maxConnectionsPerServer = Integer.parseInt(pinotConfigs.get("maxConnectionsPerServer").toString());
+            this.clientAuthEnabled = Boolean.parseBoolean(pinotConfigs.get("isClientAuthEnabled").toString());
+            this.trustStorePath = pinotConfigs.get("trustStorePath").toString();
+            this.trustStorePassword = pinotConfigs.get("trustStorePassword").toString();
+            this.keyStorePath = pinotConfigs.get("keyStorePath").toString();
+            this.keyStorePassword = pinotConfigs.get("keyStorePassword").toString();
+        }
 
         public Config(long idleTimeoutMillis, int threadPoolSize, int minConnectionsPerServer, int maxBacklogPerServer,
                       int maxConnectionsPerServer)
@@ -116,6 +149,11 @@ public class PinotScatterGatherQueryClient
             this.minConnectionsPerServer = minConnectionsPerServer;
             this.maxBacklogPerServer = maxBacklogPerServer;
             this.maxConnectionsPerServer = maxConnectionsPerServer;
+            this.clientAuthEnabled = false;
+            this.trustStorePath = null;
+            this.trustStorePassword = null;
+            this.keyStorePath = null;
+            this.keyStorePassword = null;
         }
 
         public int getThreadPoolSize()
@@ -145,22 +183,57 @@ public class PinotScatterGatherQueryClient
         {
             return maxConnectionsPerServer;
         }
+
+        public boolean isClientAuthEnabled()
+        {
+            return clientAuthEnabled;
+        }
+
+        public String getTrustStorePath()
+        {
+            return trustStorePath;
+        }
+
+        public String getTrustStorePassword()
+        {
+            return trustStorePassword;
+        }
+
+        public String getKeyStorePath()
+        {
+            return keyStorePath;
+        }
+
+        public String getKeyStorePassword()
+        {
+            return keyStorePassword;
+        }
     }
 
     public PinotScatterGatherQueryClient(Config pinotConfig)
     {
         prestoHostId = getDefaultPrestoId();
-
-        MetricsRegistry registry = new MetricsRegistry();
-        brokerMetrics = new BrokerMetrics(registry, DEFAULT_EMIT_TABLE_LEVEL_METRICS);
+        brokerMetrics = new BrokerMetrics(PinotMetricUtils.getPinotMetricsRegistry());
         brokerMetrics.initializeGlobalMeters();
+        TlsConfig tlsConfig = getTlsConfig(pinotConfig);
 
         // Setup QueryRouters
         for (int i = 0; i < pinotConfig.getThreadPoolSize(); i++) {
-            queryRouters.add(new QueryRouter(String.format("%s-%d", prestoHostId, i), brokerMetrics));
+            queryRouters.add(new QueryRouter(String.format("%s-%d", prestoHostId, i), brokerMetrics, tlsConfig));
         }
 
         config = pinotConfig;
+    }
+
+    private TlsConfig getTlsConfig(Config pinotConfig)
+    {
+        TlsConfig tlsConfig = new TlsConfig();
+        tlsConfig.setClientAuthEnabled(pinotConfig.isClientAuthEnabled());
+        tlsConfig.setTrustStorePath(pinotConfig.getTrustStorePath());
+        tlsConfig.setTrustStorePassword(pinotConfig.getTrustStorePassword());
+        tlsConfig.setKeyStorePath(pinotConfig.getKeyStorePath());
+        tlsConfig.setKeyStorePassword(pinotConfig.getKeyStorePassword());
+        return tlsConfig;
     }
 
     private static <T> T doWithRetries(int retries, Function<Integer, T> caller)
