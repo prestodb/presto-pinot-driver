@@ -47,7 +47,7 @@
 
         <shadeBase>org.apache.pinot.\$internal</shadeBase>
         <dep.pinot.version>0.8.0</dep.pinot.version>
-        <dep.helix.version>0.9.8</dep.helix.version>
+        <dep.helix.version>1.3.0</dep.helix.version>
         <log4j.version>2.11.2</log4j.version>
     </properties>
 
